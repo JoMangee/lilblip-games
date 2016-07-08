@@ -1,7 +1,8 @@
 <!doctype html>
 <html>
-<head><title>Grid Conquerer by lilblip</title></head><body><p>Test of SVG grid patterns</p>
-
+<head><title>Grid Conquerer by lilblip</title></head><body><h1>Grid Conquerer game</h1>
+<p>Try to take over the opposing colours first cell. 3x3 groups give extra moves</p>
+<p id="status">This is the status</p>
 <svg id="svgroot" width="80%" height="410px" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <pattern id="g_empty" height="20" width="20" patternUnits="userSpaceOnUse">
@@ -51,33 +52,39 @@
 </svg>
     <script type="text/javascript" src="gridconq.js"></script>
 		<script>//<![CDATA[
-      turn = "red";
+
 			function svgElementClicked(theElement)
 			{
 				var s = document.getElementById("status");
-				s.textContent = "On " + turn + "turn - A <" + theElement.nodeName + "> element with id '" + theElement.id + "' was clicked inside the <" + 
+				s.textContent = "On " + turn + " turn - A <" + theElement.nodeName + "> element with id '" + theElement.id + "' was clicked inside the <" + 
 					(theElement.ownerDocument.defaultView.frameElement?theElement.ownerDocument.defaultView.frameElement.nodeName.toLowerCase():"null") + "> element.";
+				if (theElement.id.substr(0,4) != "cell"){ return;}
         var clickedCell = getCell(theElement.id);
         if (canMove(turn,theElement.id)){ //if we can move
           if (clickedCell.cellCapture(turn)){ //if we moved
-            if (turn == "grn") { //swap to other player
-              turn = "red"
-              } else {
-              turn = "grn"; 
+            var groupCount = countGroups();
+            if (++moves >= groupCount[turn]+1){
+              nextTurn();
             }
           }
         }else{
           s.textContent = "Can't move there! - " + s.textContent;
+          if (clickedCell.inGroup()){
+            s.textContent = "New Group! - " + s.textContent;
+          }
         }
-        if (clickedCell.inGroup()){
-          s.textContent = "New Group! - " + s.textContent;
+        if (wincells[factions[1]].isKilled()){
+          s.textContent = factions[2] + " captured seed cell! They win!"
+        }
+        if (wincells[factions[2]].isKilled()){
+          s.textContent = factions[1] + " captured seed cell! They win!"
         }
 			}
 			
       generateGrid();
 				//]]>
 		</script>
-		<p id="status">This is the status</p>
+		<p>Swap to <a href = "javascript:nextTurn();">Next turn</a> or <a href = "javascript:generateGrid();">Play again</a></p>
 		<!-- http://xn- -dahlstrm-t4a.net/svg/html/from-svg-to-parent-html-script.html -->
 		
 		</body>

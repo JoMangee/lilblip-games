@@ -7,6 +7,10 @@ var cellSize = 20;
 var cellRows = 20;
 var cellCols = 20;
 var factions = ["empty","red","grn"];
+var wincells = {};
+
+var turn = "red";
+var moves = 0;
 
 
 function gridCell(x,y,id){
@@ -21,7 +25,11 @@ function gridCell(x,y,id){
   //cells around clockwise from above
   var cellsAround = [false,false,false,false,false,false,false,false]
   
-  svg.appendChild(rect); 
+  _rect = svg.getElementById(cellid)
+  if (_rect){
+      svg.removeChild(_rect);
+    }
+   svg.appendChild(rect); 
   
   
   rect.setAttribute("width", cellSize); 
@@ -77,12 +85,6 @@ function gridCell(x,y,id){
     return cellsAround;
   }
   
-  this.resetCell = function () {
-    isKilled = false;
-    inGroup = false
-    faction = factions[0];
-    this.cellCapture(faction);
-  }
   this.cellId = function () {
     return cellid;
   }
@@ -96,13 +98,21 @@ function gridCell(x,y,id){
     return inGroup;
   }
   this.setInGroup = function (newInGroup) {
-    if (svg.getElementById("h_"+cellid)){
-      svg.removeChild(groupBorder);
+    _border = svg.getElementById("h_"+cellid);
+    if (_border){
+      svg.removeChild(_border);
     }
     if (newInGroup || inGroup){ 
       svg.appendChild(groupBorder);
     }
     inGroup = newInGroup;
+  }
+  
+  this.resetCell = function () {
+    isKilled = false;
+    this.setInGroup(false);
+    faction = factions[0];
+    this.cellCapture(faction);
   }
   
   this.cellCapture = function(newFaction) {
@@ -121,7 +131,6 @@ function gridCell(x,y,id){
        return false;
     }
     rect.setAttribute("fill",cellStyle);
-    //if surounded by 8 of same colour then increase power
     
     //if killed - no longer can have group next to us
     if (isKilled){
@@ -208,13 +217,37 @@ function checkAround(centreCell){
     return cellCount;
  }
     
+function countGroups(){
+  //Check if inGroup
+    var groupCount = {};
+    groupCount[factions[0]]=0;
+    groupCount[factions[1]]=0;
+    groupCount[factions[2]]=0;
+    for (var i = 0; i < cells.length; i++) {
+        //check count of cells in existing group
+       if (cells[i].inGroup()){
+        groupCount[cells[i].faction()]++;
+       }
+    }
+    return groupCount;
+ }
 
-
+function nextTurn(){
+if (turn == "grn") { //swap to other player
+  turn = "red"
+  moves = 0;
+  } else {
+  turn = "grn";
+  moves = 0;
+}
+ message.textContent = "Now " + turn + " turn " + message.textContent ;
+}
 
 function generateGrid() {
     // Reset existing
     for (var index = 0; index < cells.length; index++) {
         cells[index].resetCell();
+        
     }
 
     // Creating new ones
@@ -226,6 +259,11 @@ function generateGrid() {
         }
     }
     
-    getCell("cell_x0y0").cellCapture("red");
-    getCell("cell_x"+(cellSize*(cellCols-1))+"y0").cellCapture("grn");
+    wincells = {};
+    wincells[factions[1]] = getCell("cell_x0y0");
+    wincells[factions[1]].cellCapture(factions[1]);
+    wincells[factions[2]] = getCell("cell_x"+(cellSize*(cellCols-1))+"y0")
+    wincells[factions[2]].cellCapture(factions[2]);
+    moves = 0;
+    message.textContent = "Ready to play. " + turn + " turn";
 }
