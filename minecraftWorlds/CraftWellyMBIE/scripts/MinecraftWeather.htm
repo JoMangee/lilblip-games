@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<h1>Minecraft Weather</h1>
+<p>This uses the MetService GovHack Live Weather API to create a minecraft weather command<br/><em>Built for Craft Wellington MineWelly project in GovHack 2016</em></p>
+<div id="command"></div>
+<div id="thundercommand"></div>
+
+<script>
+var xmlhttp = new XMLHttpRequest();
+var obsurl = "http://test-api.amazon-test.metcloudservices.com:8080/api/obs/wellington-city";
+var testobs = [{"threeHour": {"rainfall": "0.0", "rawTime": 1469863800000, "windChill": "9", "temp": "11", "windProofLayers": "1", "humidity": "74", "pressure": 991, "windSpeed": "28", "clothingLayers": "3", "dateTime": "7:30pm Saturday 30 Jul 2016", "windDirection": "NW"}, "twentyFourHour": {"minTemp": 4, "maxTemp": 14, "rainfall": "0.0", "dateTime": "9:00am Saturday 30 Jul 2016"}, "location": "Kelburn AWS", "_usage": "This data is restricted and may only be used with explicit permission from MetService NZ. Contact dataenquiries@metservice.com"}];
+
+var forecasturl = "http://test-api.amazon-test.metcloudservices.com:8080/api/obs/wellington-city";
+var testforecast = [{"_usage": "This data is restricted and may only be used with explicit permission from MetService NZ. Contact dataenquiries@metservice.com", "days": [{"min": "7", "max": "13", "riseSet": {"moonRise": "3:39am", "moonSet": "1:57pm", "sunSet": "5:27pm", "location": "Wellington", "day": "30 July 2016", "sunRise": "7:29am"}, "forecast": "Rain, clears this evening. Northwest rises to gale, with thunder storms likely", "issuedAt": "4:39pm 30 Jul", "forecastWord": "Windy", "dowTLA": "Sat", "date": "30 Jul", "dow": "Saturday"}, {"min": "7", "max": "11", "riseSet": {"moonRise": "4:41am", "moonSet": "2:51pm", "sunSet": "5:28pm", "location": "Wellington", "day": "31 July 2016", "sunRise": "7:28am"}, "forecast": "Mainly fine, chane shower in the north. Northwest winds.", "issuedAt": "4:39pm 30 Jul", "forecastWord": "Partly cloudy", "dowTLA": "Sun", "date": "31 Jul", "dow": "Sunday"}, {"min": "7", "max": "13", "riseSet": {"moonRise": "5:38am", "moonSet": "3:50pm", "sunSet": "5:29pm", "location": "Wellington", "day": "1 August 2016", "sunRise": "7:27am"}, "forecast": "Few showers, to rain afternoon. Strong NW, late S'ly.", "issuedAt": "10:27am 30 Jul", "forecastWord": "Showers", "dowTLA": "Mon", "date": "1 Aug", "dow": "Monday"}, {"min": "6", "max": "12", "riseSet": {"moonRise": "6:29am", "moonSet": "4:52pm", "sunSet": "5:30pm", "location": "Wellington", "day": "2 August 2016", "sunRise": "7:26am"}, "forecast": "Cloudy periods, a few showers. Southerlies.", "issuedAt": "10:27am 30 Jul", "forecastWord": "Few showers", "dowTLA": "Tue", "date": "2 Aug", "dow": "Tuesday"}, {"min": "6", "max": "11", "riseSet": {"moonRise": "7:14am", "moonSet": "5:55pm", "sunSet": "5:31pm", "location": "Wellington", "day": "3 August 2016", "sunRise": "7:25am"}, "forecast": "Cloudy periods, chance late shower. Northerly develops.", "issuedAt": "10:27am 30 Jul", "forecastWord": "Partly cloudy", "dowTLA": "Wed", "date": "3 Aug", "dow": "Wednesday"}, {"min": "7", "max": "11", "riseSet": {"moonRise": "7:53am", "moonSet": "6:57pm", "sunSet": "5:32pm", "location": "Wellington", "day": "4 August 2016", "sunRise": "7:23am"}, "forecast": "Rain. Southeasterlies.", "issuedAt": "11:04am 30 Jul", "forecastWord": "Rain", "dowTLA": "Thu", "date": "4 Aug", "dow": "Thursday"}, {"min": "8", "max": "11", "riseSet": {"moonRise": "8:28am", "moonSet": "7:59pm", "sunSet": "5:33pm", "location": "Wellington", "day": "5 August 2016", "sunRise": "7:22am"}, "forecast": "Rain with southerlies.", "issuedAt": "11:04am 30 Jul", "forecastWord": "Rain", "dowTLA": "Fri", "date": "5 Aug", "dow": "Friday"}, {"min": "8", "max": "10", "riseSet": {"moonRise": "9:00am", "moonSet": "8:58pm", "sunSet": "5:34pm", "location": "Wellington", "day": "6 August 2016", "sunRise": "7:21am"}, "forecast": "Rain. Southerlies.", "issuedAt": "11:04am 30 Jul", "forecastWord": "Rain", "dowTLA": "Sat", "date": "6 Aug", "dow": "Saturday"}, {"min": "8", "max": "10", "riseSet": {"moonRise": "9:30am", "moonSet": "9:57pm", "sunSet": "5:35pm", "location": "Wellington", "day": "7 August 2016", "sunRise": "7:20am"}, "forecast": "Showers. Southeasterlies.", "issuedAt": "11:04am 30 Jul", "forecastWord": "Showers", "dowTLA": "Sun", "date": "7 Aug", "dow": "Sunday"}, {"min": "9", "max": "11", "riseSet": {"moonRise": "9:59am", "moonSet": "10:54pm", "sunSet": "5:35pm", "location": "Wellington", "day": "8 August 2016", "sunRise": "7:19am"}, "forecast": "Showers. Southeasterlies.", "issuedAt": "11:04am 30 Jul", "forecastWord": "Showers", "dowTLA": "Mon", "date": "8 Aug", "dow": "Monday"}], "location": "WELLINGTON"}]
+
+xmlhttp.onreadystatechange = function() {
+    if (xmlhttp.readyState == 4 && xmlhttp.status ==  200) {
+        var myArr = JSON.parse(xmlhttp.responseText);
+        parseWeather(myArr);
+    }
+};
+parseWeather(testobs);
+checkThunder(testforecast);
+xmlhttp.open("GET", obsurl, true);
+ xmlhttp.send();
+
+function parseWeather(arr) {
+    var out = "";
+    if (arr[0].threeHour && arr[0].threeHour.rainfall && arr[0].threeHour.rainfall == "0.0"){
+        out = "<p>Rainfall obs gives <pre>/weather clear 360</pre></p>"
+    }else{
+        out = "<p>Rainfall obs gives <pre>/weather rain 360</pre></p>"
+     } 
+    
+    document.getElementById("command").innerHTML = out;
+}
+
+function checkThunder(arr) {
+    var out = "";
+    if (arr[0] && arr[0].days[0] && (arr[0].days[0].forecast.toLowerCase().includes("thunder")||arr[0].days[0].forecastWord.includes("Thunder"))){
+        out = "<p>Forecast is <pre>/weather thunder 360</pre></p>"
+    }else if (arr[0] && arr[0].days[0] && (arr[0].days[0].forecast.toLowerCase().includes("rain")||arr[0].days[0].forecastWord.includes("Rain"))){
+        out = "<p>Forecast is <pre>/weather rain 360</pre></p>"
+    }else{
+        out = "<p>Forecast is <pre>/weather clear 360</pre></p>"
+     } 
+    
+    document.getElementById("thundercommand").innerHTML = out;
+}
+</script>
+
+</body>
+</html>
